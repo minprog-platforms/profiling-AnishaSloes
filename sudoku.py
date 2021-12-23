@@ -19,14 +19,7 @@ class Sudoku:
     def place(self, value: int, x: int, y: int) -> None:
         """Place value at x,y."""
         row = self._grid[y]
-        new_row = ""
-
-        for i in range(9):
-            if i == x:
-                new_row += str(value)
-            else:
-                new_row += row[i]
-
+        new_row = row[:x] + str(value) + row[x + 1:]
         self._grid[y] = new_row
 
     def unplace(self, x: int, y: int) -> None:
@@ -37,15 +30,8 @@ class Sudoku:
 
     def value_at(self, x: int, y: int) -> int:
         """Returns the value at x,y."""
-        value = -1
-
-        for i in range(9):
-            for j in range(9):
-                if i == x and j == y:
-                    row = self._grid[y]
-                    value = int(row[x])
-
-        return value
+        row = self._grid[y]
+        return int(row[x])
 
     def options_at(self, x: int, y: int) -> Iterable[int]:
         """Returns all possible values (options) at x,y."""
@@ -76,23 +62,17 @@ class Sudoku:
         Returns the next index (x,y) that is empty (value 0).
         If there is no empty spot, returns (-1,-1)
         """
-        next_x, next_y = -1, -1
-
         for y in range(9):
             for x in range(9):
-                if self.value_at(x, y) == 0 and next_x == -1 and next_y == -1:
-                    next_x, next_y = x, y
+                if self.value_at(x, y) == 0:
+                    return x, y
 
-        return next_x, next_y
+        return -1, -1
 
     def row_values(self, i: int) -> Iterable[int]:
         """Returns all values at i-th row."""
-        values = []
-
-        for j in range(9):
-            values.append(self.value_at(j, i))
-
-        return values
+        row = self._grid[i]
+        return map(int, row)
 
     def column_values(self, i: int) -> Iterable[int]:
         """Returns all values at i-th column."""
@@ -127,22 +107,16 @@ class Sudoku:
         Returns True if and only if all rows, columns and blocks contain
         only the numbers 1 through 9. False otherwise.
         """
-        values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-        result = True
+        values = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
         for i in range(9):
-            for value in values:
-                if value not in self.column_values(i):
-                    result = False
-
-                if value not in self.row_values(i):
-                    result = False
-
-                if value not in self.block_values(i):
-                    result = False
-
-        return result
+            if values != set(self.column_values(i)):
+                return False
+            if values != set(self.row_values(i)):
+                return False
+            if values != set(self.block_values(i)):
+                return False
+        return True
 
     def __str__(self) -> str:
         representation = ""
